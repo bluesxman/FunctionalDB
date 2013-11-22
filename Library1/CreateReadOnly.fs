@@ -30,6 +30,7 @@ type Value =
     | Float of float
     | Object of obj
     | Key of int * int // the id of a entity and a time
+    | Nothing // May use this to indicate the attribute didnt exist at that time - also testing Git in Visual Studio in this commit
 
 // A value at a particular time is a Fact
 type Fact = {value : Value; time : int}  //??? Probably more efficient way by tieing things to a single transaction
