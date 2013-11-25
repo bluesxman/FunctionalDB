@@ -131,8 +131,18 @@ let transact db ops =
 // Update state every frame
 
 let db = createDatabase "test"
-let alpha = ["name", String("alpha"); "x", Float(1.0); "y", Float(8.0); "active", Boolean(true);]
-let bravo = ["name", String("bravo"); "x", Float(4.0); "y", Float(3.0); "active", Boolean(true);]
+let entities = [
+    ["name",  String("alpha"); // Maybe could have a convention later for nested entities
+    "x",      Float(1.0);      // and make automatic FKs (child to parent)
+    "y",      Float(8.0);
+    "active", Boolean(true)
+    ];
+    ["name",  String("bravo"); 
+    "x",      Float(4.0); 
+    "y",      Float(3.0); 
+    "active", Boolean(true)
+    ];
+]
 // create entities alpha and bravo in the database
 // deactivate alpha
 // move bravo
@@ -147,11 +157,9 @@ let valueNow attributeName entity=
 
 // each e where "name" equals "alpha" and "active" equals true
 
+// Test whether an attribute is equal to a given value
 let EQUALS attribute (value : Value) =
-    (fun entity -> 
-        match entity |> valueNow attribute with
-        | Nothing -> false
-        | v -> v = value)
+    fun entity -> valueNow attribute entity = value
 
 let AND pred1 pred2 = // and
     fun entity -> pred1 entity && pred2 entity
@@ -159,13 +167,18 @@ let AND pred1 pred2 = // and
 let OR pred1 pred2 = // or
     fun entity -> pred1 entity || pred2 entity
 
-//let v = String("alpha")
+let v = String("alpha")
 //let nameAlpha = EQUALS("name" String("alpha"))
 
-//let pred = (AND (EQUALS ("name" String("alpha"))) (EQUALS "active" Boolean(true)))
+let nameAlpha = EQUALS "name" (String("alpha"))
+let activeTrue = EQUALS "active" (Boolean(true))
+let pred = AND nameAlpha activeTrue
+let pred2 = AND (EQUALS "name" (String("alpha"))) (EQUALS "active" (Boolean(true)))
 
 let gt5 x = x > 5
 let lt10 x = x < 10
 let foo = AND gt5 lt10
 let seven = foo 7
 let twelve = foo 12
+
+//let where = ["name"; EQUALS; "alpha"; AND; "active"; EQUALS; true]
