@@ -86,9 +86,9 @@ type Database = {
 // create a DB
 let createDatabase name = {name = name; entities = Map.empty; entitySeq = 0; timeSeq = 0}
 
-let createEntity id time attribMap =
-    let attribs = Map.map (fun k v -> [{value = v; time = time}]) attribMap
-    {id = id; attributes = attribs}
+//let createEntity id time attribMap =
+//    let attribs = Map.map (fun k v -> [{value = v; time = time}]) attribMap
+//    {id = id; attributes = attribs}
     
 let transact db ops =
     let time = db.timeSeq + 1
@@ -143,7 +143,21 @@ let entities = [
     "active", Boolean(true)
     ];
 ]
+
+// what if an entity was an attribute map (AVL tree), a timestamp, and a link back                                     
+// to its predecessor. 
+let createEntity attribs id time =
+    let attribMap = 
+        List.map (fun (a, v) -> (a, [{value = v; time = time}])) attribs
+        |> Map.ofList
+    {id = id; attributes = attribMap}
+
 // create entities alpha and bravo in the database
+//let add entities db =
+//    let time = db.timeSeq + 1
+//    let id = db.entitySeq + 1
+
+
 // deactivate alpha
 // move bravo
 // select all active now
