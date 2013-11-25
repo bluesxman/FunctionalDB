@@ -2,6 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/Library1/bin/Debug
-/Library1/obj/Debug
+/Library1/bin/
+/Library1/obj/
 FunctionalDB.suo
