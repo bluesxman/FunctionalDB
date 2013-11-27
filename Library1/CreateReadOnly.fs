@@ -146,16 +146,23 @@ let entities = [
 
 // what if an entity was an attribute map (AVL tree), a timestamp, and a link back                                     
 // to its predecessor. 
-let createEntity attribs id time =
+let createEntity time id attribs =
     let attribMap = 
         List.map (fun (a, v) -> (a, [{value = v; time = time}])) attribs
         |> Map.ofList
     {id = id; attributes = attribMap}
 
-// create entities alpha and bravo in the database
-//let add entities db =
-//    let time = db.timeSeq + 1
-//    let id = db.entitySeq + 1
+
+ // create entities alpha and bravo in the database
+let addAll entities db =
+    let time = db.timeSeq + 1
+    let idAttribSeq = Seq.zip (seq {db.entitySeq .. System.Int32.MaxValue}) (Seq.ofList entities)
+    let create (id, attribs) = (id, createEntity time id attribs)
+    let add entMap (id, entity) = Map.add id entity entMap
+    let idEntSeq = Seq.map create idAttribSeq
+    let newEntities = Seq.fold add db.entities idEntSeq
+    {name = db.name; entities = newEntities; entitySeq = db.entitySeq + entities.Length; timeSeq = time}
+
 
 
 // deactivate alpha
