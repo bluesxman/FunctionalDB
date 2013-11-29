@@ -1,4 +1,4 @@
-﻿module CreateReadOnly
+﻿module FuncDB
 
 (*
 
@@ -188,17 +188,32 @@ let update where attribs db =
     {name = db.name; entities = newEntityMap; entitySeq = db.entitySeq; timeSeq = time}
 
 
-let valueNow attributeName entity=
+let select where db =
+    Seq.filter where (Map.toSeq db.entities)
+
+let valueWhen time attributeName entity =
+    let rightBefore factList =
+        match List.tryFind (fun fact -> fact.time <= time) factList with
+        | Some(fact) -> fact.value
+        | None -> Undef
+        
+    match Map.tryFind attributeName entity.attributes with
+    | Some (factList) -> rightBefore factList
+    | None -> Undef
+
+let valueNow attributeName entity =
     match Map.tryFind attributeName entity.attributes with
     | Some (fact :: _) -> fact.value
-    | Some [] -> Undef  // this should never happen period
-    | None -> Undef // this should never happen for time "now"
+    | _ -> Undef   // Handle Some([]) and None
 
 // each e where "name" equals "alpha" and "active" equals true
 
 // Test whether an attribute is equal to a given value
-let EQUALS attribute (value : Value) =
+let equalsNow attribute (value : Value) =
     fun (id, entity) -> valueNow attribute entity = value
+
+let equalsWhen time attribute (value : Value) =
+    fun (id, entity) -> valueWhen time attribute entity = value
 
 let AND pred1 pred2 = // and
     fun entity -> pred1 entity && pred2 entity
@@ -258,15 +273,21 @@ let charlie = [
 let db = 
     createDatabase "test"
     |> addAll alphaAndBravo
-    |> update (EQUALS "name" (String("alpha"))) ["active", Boolean(false)]
+    |> update (equalsNow "name" (String("alpha"))) ["active", Boolean(false)]
     |> addAll charlie
-    |> update (EQUALS "name" (String("bravo"))) ["x", Float(-10.0); "y", Float(-20.0)]
+    |> update (equalsNow "name" (String("bravo"))) ["x", Float(-10.0); "y", Float(-20.0)]
 
 
 // select all active now
+let activeNow = List.ofSeq (select (equalsNow "active" (Boolean(true))) db)
+
 // select all active before
+let activeAt1 = List.ofSeq (select (equalsWhen 1 "active" (Boolean(true))) db)
 
 
 // Current Thoughts and Issues:
 // 1) A set of operations can't occur atomically, e.g. create an entity and update another in a single transaction
 // 2) Timestamps per attribute eat more memory than timestamping the entity
+// 3) Returning tuple (id, entity) from selects feels clunky
+// 4) If attributes change a lot, finding old attribute values will be O(n) since its a list
+// 5) 
