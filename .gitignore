@@ -5,3 +5,5 @@
 /Library1/bin/
 /Library1/obj/
 *.suo
+/UpgradeLog.htm
+/Backup
